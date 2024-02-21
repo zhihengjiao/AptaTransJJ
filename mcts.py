@@ -114,7 +114,7 @@ class MCTS:
         else: #If not, then random
             next_node = np.random.randint(0, self.states)
             if now.children_stat[next_node] == False: #If selected child is not expanded, then expand and simulate
-                next_node = self.expand(classifier, child=next_node, now=now)
+                _ = self.expand(classifier, child=next_node, now=now)
     
                 return self.root #start iteration at this node
             
@@ -134,7 +134,7 @@ class MCTS:
         return child
     
     #simulate
-    def simulate(self, classifier, target=None):
+    def simulateWithClassifier(self, classifier, target=None):
         now = target #Target node
         sim_seq = ""
         
@@ -159,6 +159,42 @@ class MCTS:
             apta = torch.tensor(rna2vec(sim_seq), dtype=torch.int64).to(self.device)
 
             score = classifier(apta, self.encoded_targetprotein)
+
+        return score
+
+    # JJ's new grader
+    def simulate(self, grader, target=None):
+        # classifier is the grader implemented by JJ
+
+        # TODO: init JJ's Grader class
+        grader = Grader()
+
+        now = target  # Target node
+        sim_seq = ""
+
+        while now.root != True:  # Parent's letters
+            sim_seq = now.letter + sim_seq
+            now = now.parent
+
+        sim_seq = self.base + sim_seq
+
+        for i in range((self.depth * 2) - len(sim_seq)):  # Random child letters
+            r = np.random.randint(0, self.states)
+            sim_seq += self.letters[r]
+
+        sim_seq = self.reconstruct(sim_seq)
+        scores = []
+
+        with torch.no_grad():
+            sim_seq = self.reconstruct(sim_seq)
+            sim_seq = np.array([sim_seq])
+
+            apta = torch.tensor(rna2vec(sim_seq), dtype=torch.int64).to(self.device)
+
+            score = grader.get_score(apta, self.encoded_targetprotein)
+
+        # TODO: 1. implement Grader class. It has a .get_score() func that take arbitrary inputs and return a score
+        # TODO: 2. get the input for Grader.get_score() from self.xxx
 
         return score
     

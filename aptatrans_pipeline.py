@@ -277,6 +277,7 @@ class AptaTransPipeline:
         mcts = MCTS(encoded_targetprotein, depth=depth, iteration=iteration, states=8, target_protein=target, device=self.device)
 
         for _ in range(n_aptamers):
+            # TODO: replace self.model with JJ's Grader
             mcts.make_candidate(self.model)
             candidates.append(mcts.get_candidate())
 
